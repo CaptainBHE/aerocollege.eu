@@ -471,9 +471,37 @@
         return;
       }
 
-      // In production, replace this with a real form submission (e.g. fetch to a backend or Formspree).
-      form.style.display = 'none';
-      document.getElementById('form-success').style.display = 'block';
+      // Submit to Formspree via fetch
+      var submitBtn = form.querySelector('.form-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending…';
+
+      var data = new FormData(form);
+      // Remove captcha field from submission
+      data.delete('captcha');
+
+      fetch('https://formspree.io/f/xbdppegw', {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(function(response) {
+        if (response.ok) {
+          form.style.display = 'none';
+          document.getElementById('form-success').style.display = 'block';
+        } else {
+          return response.json().then(function(data) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send message →';
+            alert('Something went wrong. Please try again or contact us directly by phone.');
+          });
+        }
+      })
+      .catch(function() {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send message →';
+        alert('Network error. Please check your connection and try again.');
+      });
     });
   </script>
 
